@@ -77,5 +77,3 @@ LABEL \
     org.opencontainers.image.url="https://github.com/aryanhasgithub/lva-os" \
     org.opencontainers.image.licenses="Apache License 2.0" \
     org.opencontainers.image.version="${BUILD_VERSION}"
-
-CMD ["/usr/bin/cli.sh"]
