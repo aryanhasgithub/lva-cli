@@ -17,6 +17,7 @@ import (
 
 const (
 	portalPort         = 8000
+	firstBootPort      = 8080
 	portalPollInterval = 2 * time.Second
 	portalTimeout      = 30 * time.Minute
 )
@@ -51,7 +52,9 @@ func printBanner() {
 }
 
 // waitForPortal polls the portal health endpoint until it responds or times out.
-// SIGINT is ignored during the wait.
+// If the first-boot progress server is up on port 8080 instead, it prints that
+// and drops into the REPL immediately without continuing to wait.
+// SIGINT skips the wait entirely.
 func waitForPortal() {
 	skipCh := make(chan struct{}, 1)
 	sigCh := make(chan os.Signal, 1)
@@ -69,6 +72,12 @@ func waitForPortal() {
 
 	if isPortalReady(portalURL) {
 		printPortalReady(true)
+		return
+	}
+
+	// Check for first-boot pull progress server before entering the poll loop.
+	if isPortalReady(fmt.Sprintf("http://127.0.0.1:%d", firstBootPort)) {
+		printFirstBootReady()
 		return
 	}
 
@@ -91,6 +100,12 @@ func waitForPortal() {
 				printPortalReady(first)
 				return
 			}
+			// Mid-wait: check whether first-boot server came up.
+			if isPortalReady(fmt.Sprintf("http://127.0.0.1:%d", firstBootPort)) {
+				fmt.Print("\r\033[K")
+				printFirstBootReady()
+				return
+			}
 			if first {
 				fmt.Print("\nPortal is not ready — if this is the first boot this is normal, the supervisor is setting up.")
 				first = false
@@ -111,6 +126,16 @@ func printPortalReady(wasWaiting bool) {
 	} else {
 		fmt.Printf("\nPortal:  http://localhost:%d\n\n", portalPort)
 	}
+}
+
+func printFirstBootReady() {
+	ip := getHostIP()
+	addr := "localhost"
+	if ip != "" {
+		addr = ip
+	}
+	fmt.Printf("\nFirst boot in progress — supervisor is pulling containers.\n")
+	fmt.Printf("Pull progress:  http://%s:%d\n\n", addr, firstBootPort)
 }
 
 func isPortalReady(url string) bool {
