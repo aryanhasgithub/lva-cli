@@ -107,7 +107,7 @@ func waitForPortal() {
 				return
 			}
 			if first {
-				fmt.Print("\nPortal is not ready — if this is the first boot this is normal, the supervisor is setting up.")
+				fmt.Print("\nPortal is not ready — please wait.")
 				first = false
 			} else {
 				fmt.Print(".")
