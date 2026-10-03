@@ -135,7 +135,7 @@ func printFirstBootReady() {
 		addr = ip
 	}
 	fmt.Printf("\nFirst boot in progress — supervisor is pulling containers.\n")
-	fmt.Printf("Pull progress:  http://%s:%d\n\n", addr, firstBootPort)
+	fmt.Printf("Pull progress:  http://%s:%d/firstboot\n\n", addr, firstBootPort)
 }
 
 func isPortalReady(url string) bool {
